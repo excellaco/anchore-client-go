@@ -8,8 +8,8 @@ import (
 	"github.com/excellaco/anchore-client-go/types"
 )
 
-func (c *Client) RegistryList() ([]*types.Registry, error) {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/registries", c.HostURL), nil)
+func (c *Client) RegistryRead(registryURL *string) (*types.Registry, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/registries/%s", c.HostURL, *registryURL), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -25,5 +25,9 @@ func (c *Client) RegistryList() ([]*types.Registry, error) {
 		return nil, err
 	}
 
-	return registries, nil
+	if len(registries) == 0 {
+		return nil, fmt.Errorf("%s not found", *registryURL)
+	}
+
+	return registries[0], nil
 }

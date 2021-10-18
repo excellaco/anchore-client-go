@@ -5,9 +5,18 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"time"
+
+	"github.com/excellaco/anchore-client-go/types"
 )
+
+type AnchoreClient interface {
+	RegistryList() ([]*types.Registry, error)
+	RegistryRead(registryURL *string) (*types.Registry, error)
+	RegistryCreate(registry types.Registry) ([]*types.Registry, error)
+	RegistryUpdate(registry types.Registry) ([]*types.Registry, error)
+	RegistryDelete(registryURL *string) error
+}
 
 type Client struct {
 	HostURL    string
@@ -20,12 +29,8 @@ type AuthStruct struct {
 	Password string
 }
 
-func NewClient(host, username, password *string) *Client {
-	if host == nil {
-		*host = os.Getenv("ANCHORE_CLI_URL")
-	}
-
-	c := Client{
+func NewClient(host, username, password *string) AnchoreClient {
+	return &Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		HostURL:    *host,
 		Auth: AuthStruct{
@@ -33,8 +38,6 @@ func NewClient(host, username, password *string) *Client {
 			Password: *password,
 		},
 	}
-
-	return &c
 }
 
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {

@@ -13,8 +13,9 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestRegistryList(t *testing.T) {
-	expectedURL := "/registries"
+func TestRegistryRead(t *testing.T) {
+	expectedRegistryURL := "example.com:5000"
+	expectedURL := fmt.Sprintf("/registries/%s", expectedRegistryURL)
 
 	testRegistry := &types.Registry{
 		URL:  "example:5000",
@@ -40,15 +41,11 @@ func TestRegistryList(t *testing.T) {
 		}),
 	}
 
-	registries, err := client.RegistryList()
+	registry, err := client.RegistryRead(&expectedRegistryURL)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if len(registries) != 1 {
-		t.Fatalf("expected 1 checkpoint, got %v", registries)
-	}
-
-	assert.Equal(t, registries[0].URL, testRegistry.URL, "Registry URL should match")
-	assert.Equal(t, registries[0].Name, testRegistry.Name, "Registry Name should match")
+	assert.Equal(t, registry.URL, testRegistry.URL, "Registry URL should match")
+	assert.Equal(t, registry.Name, testRegistry.Name, "Registry Name should match")
 }
