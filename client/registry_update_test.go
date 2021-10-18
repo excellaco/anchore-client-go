@@ -13,10 +13,12 @@ import (
 	"gotest.tools/assert"
 )
 
-func TestRegistryCreate(t *testing.T) {
-	expectedURL := "/registries"
+func TestRegistryUpdate(t *testing.T) {
+	expectedRegistryURL := "example.com:5000"
+	expectedURL := fmt.Sprintf("/registries/%s", expectedRegistryURL)
+
 	testRegistry := &types.Registry{
-		URL:  "example.com:5000",
+		URL:  expectedRegistryURL,
 		Name: "test",
 	}
 
@@ -25,8 +27,8 @@ func TestRegistryCreate(t *testing.T) {
 			if !strings.HasPrefix(req.URL.Path, expectedURL) {
 				return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, req.URL)
 			}
-			if req.Method != http.MethodPost {
-				return nil, fmt.Errorf("expected POST method, got %s", req.Method)
+			if req.Method != http.MethodPut {
+				return nil, fmt.Errorf("expected PUT method, got %s", req.Method)
 			}
 
 			content, err := json.Marshal([]*types.Registry{testRegistry})
@@ -41,7 +43,7 @@ func TestRegistryCreate(t *testing.T) {
 		}),
 	}
 
-	registries, err := client.RegistryCreate(*testRegistry)
+	registries, err := client.RegistryUpdate(*testRegistry)
 	if err != nil {
 		t.Fatal(err)
 	}

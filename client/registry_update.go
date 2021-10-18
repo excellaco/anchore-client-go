@@ -9,13 +9,13 @@ import (
 	"github.com/excellaco/anchore-client-go/types"
 )
 
-func (c *Client) RegistryCreate(registry types.Registry) ([]*types.Registry, error) {
+func (c *Client) RegistryUpdate(registry types.Registry) ([]*types.Registry, error) {
 	rb, err := json.Marshal(registry)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/registries", c.HostURL), strings.NewReader(string(rb)))
+	req, err := http.NewRequest("PUT", fmt.Sprintf("%s/registries/%s", c.HostURL, registry.URL), strings.NewReader(string(rb)))
 	if err != nil {
 		return nil, err
 	}
@@ -27,11 +27,11 @@ func (c *Client) RegistryCreate(registry types.Registry) ([]*types.Registry, err
 		return nil, err
 	}
 
-	newRegistries := []*types.Registry{}
-	err = json.Unmarshal(body, &newRegistries)
+	updatedRegistries := []*types.Registry{}
+	err = json.Unmarshal(body, &updatedRegistries)
 	if err != nil {
 		return nil, err
 	}
 
-	return newRegistries, nil
+	return updatedRegistries, nil
 }
