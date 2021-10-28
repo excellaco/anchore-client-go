@@ -49,3 +49,29 @@ func TestRegistryRead(t *testing.T) {
 	assert.Equal(t, registry.URL, testRegistry.URL, "Registry URL should match")
 	assert.Equal(t, registry.Name, testRegistry.Name, "Registry Name should match")
 }
+
+func TestRegistryReadNotFound(t *testing.T) {
+	expectedRegistryURL := "example.com:5000"
+	expectedURL := fmt.Sprintf("/registries/%s", expectedRegistryURL)
+
+	client := &Client{
+		HTTPClient: newMockClient(func(req *http.Request) (*http.Response, error) {
+			if !strings.HasPrefix(req.URL.Path, expectedURL) {
+				return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, req.URL)
+			}
+			if req.Method != http.MethodGet {
+				return nil, fmt.Errorf("expected GET method, got %s", req.Method)
+			}
+			return &http.Response{
+				StatusCode: http.StatusNotFound,
+			}, nil
+		}),
+	}
+
+	_, err := client.RegistryRead(&expectedRegistryURL)
+
+	clientError := err.(*ClientError)
+
+	assert.Equal(t, clientError.StatusCode, http.StatusNotFound, "Status code should match")
+	assert.Equal(t, clientError.URL, expectedURL, "Registry URL should match")
+}

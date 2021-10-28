@@ -29,6 +29,13 @@ type AuthStruct struct {
 	Password string
 }
 
+type ClientError struct {
+	URL        string
+	StatusCode int
+}
+
+func (e *ClientError) Error() string { return fmt.Sprintf("%s: %d", e.URL, e.StatusCode) }
+
 func NewClient(host, username, password *string) AnchoreClient {
 	return &Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
@@ -56,8 +63,8 @@ func (c *Client) doRequest(req *http.Request) ([]byte, error) {
 	}
 
 	if res.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("status: %d, body: %s", res.StatusCode, body)
+		return nil, &ClientError{URL: req.URL.String(), StatusCode: res.StatusCode}
 	}
 
-	return body, err
+	return body, nil
 }
